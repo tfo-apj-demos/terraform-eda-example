@@ -1,0 +1,25 @@
+---
+- name: listen for tfc post plan run task events
+  hosts: all
+  sources:
+    - name: tfc run task webhook
+      ansible.eda.webhook:
+        host: 0.0.0.0
+        port: 5000
+        # need a custom de with certs baked in for this to work
+        certfile: /opt/tls/custom/fullchain.pem
+        keyfile: /opt/tls/custom/key.pem
+  rules:
+    - name: post plan status rule
+      condition: event.payload.stage == "post_plan"
+      actions:
+        - print_event:
+           pretty: true
+        - run_job_template:
+            name: Post Plan Run Task
+            organization: Default
+            job_args:
+              extra_vars:
+                access_token: "{{ event.payload.access_token }}"
+                task_result_callback_url: "{{ event.payload.task_result_callback_url }}"
+                workspace: "{{ event.payload.workspace_id}}"              

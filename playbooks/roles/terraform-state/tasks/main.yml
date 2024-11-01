@@ -1,0 +1,36 @@
+---
+# tasks file for terraform-state
+- name: get state version for workspace {{ workspace }}
+  ansible.builtin.uri:
+    url: "{{ hostname }}/api/v2/workspaces/{{ workspace }}/current-state-version"
+    headers:
+      Content-Type: application/vnd.api+json
+      Authorization: "Bearer {{ tfc_user_token }}"
+  register: current_state
+
+- name: show state outputs
+  ansible.builtin.debug:
+    msg: "{{ current_state.json | to_nice_json }}"
+
+- name: get state outputs for state version {{ current_state.json.data.id  }}
+  ansible.builtin.uri:
+    url: "{{ hostname }}/api/v2/state-versions/{{ current_state.json.data.id }}/outputs"
+    headers:
+      Content-Type: application/vnd.api+json
+      Authorization: "Bearer {{ tfc_user_token }}"
+  register: current_state_outputs
+
+- name: initialize state_output_keys
+  ansible.builtin.set_fact:
+    state_output_keys: []
+
+- name: set each key/value pair as a separate fact
+  ansible.builtin.set_fact:
+    "{{ item.attributes.name }}": "{{ item.attributes.value }}"
+    state_output_keys: "{{ state_output_keys + [item.attributes.name] }}"
+  loop: "{{ current_state_outputs.json.data }}"
+
+- name: show state outputs
+  ansible.builtin.debug:
+    msg: "{{ state_output_keys }}"
+  when: state_output_keys is defined

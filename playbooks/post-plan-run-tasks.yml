@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+  - role: terraform-state
+  - role: run-task-response
+    vars:
+      run_task_status: passed
+      run_task_message: ansible eda post plan run task completed succesfully
+      
+    
+
+
+
