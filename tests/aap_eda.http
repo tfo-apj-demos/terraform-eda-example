@@ -1,3 +1,21 @@
+#$ 
+
+
+$WEBHOOK_BODY='{
+  "event": {
+    "event_type": "test",
+    "event_id": "123",
+    "event_time": "2021-09-01T00:00:00Z",
+    "event_data": {
+      "key": "value"
+    }
+  }
+}'
+#echo -n $WEBHOOK_BODY | openssl dgst -sha512 -hmac "Hashicorp123!" -binary | openssl enc -base64
+
+
+###
+
 POST https://aap-aap.apps.openshift-01.hashicorp.local/eda-event-streams/api/eda/v1/external_event_stream/a2afe001-191b-4290-994f-1c4b0c384f54/post/
 Content-Type: application/json
 X-TFC-Task-Signature: Hashicorp123!
