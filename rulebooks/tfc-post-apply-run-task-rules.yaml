@@ -1,6 +1,15 @@
 ---
 - name: listen for tfc post apply run task events
   hosts: all
+  sources:
+    - name: tfc run task webhookb post-apply
+      ansible.eda.webhook:
+        host: 0.0.0.0
+        port: 5003
+        hmac_secret: 'Hashicorp123!'
+        hmac_header: 'X-TFC-Task-Signature'
+        hmac_format: hex
+        hmac_algo: sha512
   rules:
     - name: post apply status rule
       condition: event.payload.stage == "post_apply"

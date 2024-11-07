@@ -1,7 +1,15 @@
 ---
 - name: listen for tfc notification events
   hosts: all
-
+  sources:
+    - name: hcp terraform notification webhook
+      ansible.eda.webhook:
+        host: 0.0.0.0
+        port: 5004
+        hmac_secret: 'Hashicorp123!'
+        hmac_header: 'X-TFC-Task-Signature'
+        hmac_format: hex
+        hmac_algo: sha512
   rules:
     - name: pending status rule
       condition: event.payload.notifications[0].run_status == "pending"
