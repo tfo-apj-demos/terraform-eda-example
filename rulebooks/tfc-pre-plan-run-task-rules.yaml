@@ -12,7 +12,7 @@
         hmac_algo: sha512
   rules:
     - name: pre plan status rule
-      condition: true #event.payload.stage == "post_plan"
+      condition: true
       actions:
         - print_event:
            pretty: true
