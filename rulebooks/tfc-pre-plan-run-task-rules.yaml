@@ -2,7 +2,7 @@
 - name: listen for tfc pre plan run task events
   hosts: all
   sources:
-    - name: hcp terraform runtask pre-plan
+    - name: hcp terraform runtask preplan
       ansible.eda.webhook:
         host: 0.0.0.0
         port: 5000
@@ -12,7 +12,6 @@
         hmac_algo: sha512
   rules:
     - name: pre plan status rule
-
       condition: true #event.payload.stage == "post_plan"
       actions:
         - print_event:
