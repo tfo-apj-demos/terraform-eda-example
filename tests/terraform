@@ -1,0 +1,11 @@
+terraform { 
+  cloud { 
+    hostname = "tfe.hashicorp.local" 
+    organization = "gcve" 
+
+    workspaces { 
+      name = "testnotifications" 
+    } 
+  } 
+}
+
