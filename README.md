@@ -12,7 +12,7 @@ This repository contains Ansible artifacts designed to facilitate the integratio
 
 Before using this repository, ensure you have the following installed and configured:
 
-- Ansible Automation Platform (2.4 or later)
+- Ansible Automation Platform (2.5 or later)
 - Terraform Cloud
 - A Terraform Cloud User Token,set up as a Custom Credential in Ansible Automation Platform Controller.
 
