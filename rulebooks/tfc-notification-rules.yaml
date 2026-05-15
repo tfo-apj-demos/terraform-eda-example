@@ -11,6 +11,22 @@
         hmac_format: hex
         hmac_algo: sha512
   rules:
+    - name: Drift Detected
+      condition: event.payload.message == "Drift Detected" and event.payload.details.new_assessment_result.resources_drifted > 0
+      actions:
+        - debug:
+            var: event
+        - run_job_template:
+            name: drift-hello-world
+            organization: Default
+            job_args:
+              extra_vars:
+                tfc_workspace_id: "{{ event.payload.details.workspace_id }}"
+                tfc_workspace_name: "{{ event.payload.details.workspace_name }}"
+                tfc_organization_name: "{{ event.payload.details.organization_name }}"
+                tfc_assessment_result_url: "{{ event.payload.details.new_assessment_result.url }}"
+                tfc_resources_drifted: "{{ event.payload.details.new_assessment_result.resources_drifted }}"
+
     - name: pending status rule
       condition: event.payload.notifications[0].run_status == "pending"
       action:
