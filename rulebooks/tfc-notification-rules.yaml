@@ -17,7 +17,7 @@
         - debug:
             var: event
         - run_job_template:
-            name: drift-hello-world
+            name: drift-remediate
             organization: Default
             job_args:
               extra_vars:
