@@ -33,10 +33,11 @@
             job_args:
               extra_vars:
                 tfc_workspace_id: "{{ event.payload.correlation_id }}"
-                tfc_run_message: "Drift remediation — ServiceNow {{ event.payload.cr_number }} approved by {{ event.payload.approver }}"
-                # tfc_approver + tfc_cr_number land as separate extra_vars
-                # so the role can post an audit comment to the run.
-                tfc_approver: "{{ event.payload.approver }}"
+                # Prefer the approver's display name (e.g. "David Loo") for
+                # the run message + audit comment; fall back to the
+                # sAMAccountName if the SN business rule didn't populate it.
+                tfc_run_message: "Drift remediation — ServiceNow {{ event.payload.cr_number }} approved by {{ event.payload.approver_display | default(event.payload.approver) }}"
+                tfc_approver: "{{ event.payload.approver_display | default(event.payload.approver) }}"
                 tfc_cr_number: "{{ event.payload.cr_number }}"
 
     - name: catchall
