@@ -11,13 +11,17 @@
         hmac_format: hex
         hmac_algo: sha512
   rules:
+    # Drift detected → open a ServiceNow incident + change request.
+    # The CR carries the workspace_id in correlation_id; the
+    # snow-cr-approval-rules.yaml listener fires the actual
+    # remediation apply once the CR is approved in ServiceNow.
     - name: Drift Detected
       condition: event.payload.message == "Drift Detected" and event.payload.details.new_assessment_result.resources_drifted > 0
       actions:
         - debug:
             var: event
         - run_job_template:
-            name: drift-remediate
+            name: drift-create-snow-tickets
             organization: Default
             job_args:
               extra_vars:
