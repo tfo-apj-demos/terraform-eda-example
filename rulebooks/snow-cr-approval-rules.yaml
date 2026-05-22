@@ -1,0 +1,42 @@
+---
+# Listens for ServiceNow CR-approved events (POSTed by an SN business
+# rule via an Outbound REST Message). On approval, fires the
+# tfc-trigger-apply job template which calls the HCP TF API to apply
+# the workspace identified in the CR's correlation_id.
+#
+# Expected payload shape from SN (defined in the Outbound REST Message):
+#   {
+#     "cr_number"        : "CHG0030042",
+#     "cr_sys_id"        : "...",
+#     "correlation_id"   : "ws-JxUw2w1CoWwCRwZe",  # = HCP TF workspace id
+#     "workspace_name"   : "better-together-vm-lifecycle-dev",
+#     "approver"         : "admin",
+#     "approval_state"   : "approved"
+#   }
+- name: listen for ServiceNow CR approval events
+  hosts: all
+  sources:
+    - name: snow_cr_approval
+      ansible.eda.webhook:
+        host: 0.0.0.0
+        port: 5005
+
+  rules:
+    - name: CR Approved -> trigger HCP TF apply
+      condition: event.payload.approval_state == "approved" and event.payload.correlation_id is defined
+      actions:
+        - debug:
+            var: event.payload
+        - run_job_template:
+            name: tfc-trigger-apply
+            organization: Default
+            job_args:
+              extra_vars:
+                tfc_workspace_id: "{{ event.payload.correlation_id }}"
+                tfc_run_message: "Drift remediation — ServiceNow {{ event.payload.cr_number }} approved by {{ event.payload.approver }}"
+
+    - name: catchall
+      condition: event.payload.approval_state != "approved"
+      action:
+        print_event:
+          pretty: true
