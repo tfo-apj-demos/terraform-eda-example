@@ -24,6 +24,17 @@
   rules:
     - name: CR Approved -> trigger HCP TF apply
       condition: event.payload.approval_state == "approved" and event.payload.correlation_id is defined
+      # Dedup at the EDA layer: SN's approval engine transitions the CR's
+      # `approval` field more than once during the approval cascade, which
+      # makes the SN business rule POST twice for every real approval (1-2s
+      # apart). Without throttling, EDA fires the rule twice -> two JT-91
+      # job runs -> two duplicate TFC apply runs against the same workspace.
+      # The throttle keyed on cr_number collapses the duplicate within a
+      # 5-minute window.
+      throttle:
+        group_by_attributes:
+          - event.payload.cr_number
+        once_within: 5 minutes
       actions:
         - debug:
             var: event.payload
@@ -39,6 +50,7 @@
                 tfc_run_message: "Drift remediation — ServiceNow {{ event.payload.cr_number }} approved by {{ event.payload.approver_display | default(event.payload.approver) }}"
                 tfc_approver: "{{ event.payload.approver_display | default(event.payload.approver) }}"
                 tfc_cr_number: "{{ event.payload.cr_number }}"
+                tfc_cr_sys_id: "{{ event.payload.cr_sys_id | default('') }}"
 
     - name: catchall
       condition: event.payload.approval_state != "approved"
